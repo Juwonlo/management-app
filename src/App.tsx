@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+// App.tsx
+import React, { useState, useEffect } from 'react';
+import { getAllTasks, saveTasks, Task } from './tasksData';
+import TaskList from './components/TaskList';
+import TaskForm from './components/TaskForm';
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const tasksFromLocalStorage = getAllTasks();
+    setTasks(tasksFromLocalStorage);
+  }, []);
+
+  const addTask = (task: Task): void => {
+    const newTasks = [...tasks, task];
+    setTasks(newTasks);
+    saveTasks(newTasks);
+  };
+
+  const editTask = (editedTask: Task): void => {
+    const updatedTasks = tasks.map((task) =>
+      task.id === editedTask.id ? { ...task, ...editedTask } : task
+    );
+    setTasks(updatedTasks);
+    saveTasks(updatedTasks);
+  };
+
+  const deleteTask = (taskId: number): void => {
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    setTasks(updatedTasks);
+    saveTasks(updatedTasks);
+  };
+
+  const completeTask = (taskId: number): void => {
+    const updatedTasks = tasks.map((task) =>
+      task.id === taskId ? { ...task, completed: true } : task
+    );
+    setTasks(updatedTasks);
+    saveTasks(updatedTasks);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="App">
+      <h1>Task Management Application</h1>
+      <TaskForm onAddTask={addTask} />
+      <TaskList
+        tasks={tasks}
+        onCompleteTask={completeTask}
+        onDeleteTask={deleteTask}
+        onEditTask={editTask}
+      />
+    </div>
+  );
+};
 
-export default App
+export default App;
